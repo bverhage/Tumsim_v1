@@ -40,20 +40,20 @@ dt=0.2
 # This is purly for clarivication
 
 #initial place vector
-x0=np.array([[0],
-             [0],
-             [80]])
+x0=np.array([[0],   #x0
+             [0],   #y0
+             [80]]) #z0
     
 #intial speed vector
-x0_dot=np.array([[1],
-                 [1],
-                 [2]])
+x0_dot=np.array([[1],  #vx0
+                 [1],  #vy0
+                 [2]]) #vz0
 
 #inital orientation vector
-q0=np.array([[0],
-             [0],
-             [0],
-             [1]])  
+angle0=np.array([[np.pi], #roll0
+                 [0],     #pitch0
+                 [0]])    #yaw0
+q0=plots.euler_to_quaternion(angle0[0,0], angle0[1,0], angle0[2,0]) 
 
 #inital angular velocity vector
 q0_dot=np.array([[1],
@@ -117,5 +117,7 @@ plots.trajectory_3D_plot(w,Time)
 plots.trjacetory_Z_plot(w,Time)
 
 plots.quaturnianplot(w,Time)
+
+plots.Eulerangleplot(w,Time)
 
 print('------ end of code ------')
