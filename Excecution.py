@@ -11,6 +11,12 @@ import plots
 
 from NumericalSolvers import RK,EF,TZ
 
+from tqdm import tqdm 
+
+### if the porces bar does not work as expected in spyder
+### than use the following code in the console
+### conda install -c conda-forge tqdm
+
 
 print('------ begin of code ------')
 
@@ -75,28 +81,35 @@ Time=[t0]
 
 
 ##----------- The excecution --------------
-while(Time[-1]<tE):
-    
-    #appling the numerical method over the differnential eqation f.
-    
-    wn=RK(Time,w,dt)
-    
-    #adding the next point to the numerical matrix w
-    
-    w=np.append(w,wn,axis=1)
-    
+## It uses tqdm to create a proces bar.
 
-    #going to the next time step.
-    
-    Time.append(Time[-1]+dt)
-    
-    #reitterating everything until tE
-    
-    #unless the z coordinate has become 0.
-    if(w[2,-1]<0):
+with tqdm(total=int(np.ceil(tE/dt))) as pbar:
+    while(Time[-1]<tE):
         
-        break
-  
+        #appling the numerical method over the differnential eqation f.
+        
+        wn=RK(Time,w,dt)
+        
+        #adding the next point to the numerical matrix w
+        
+        w=np.append(w,wn,axis=1)
+        
+    
+        #going to the next time step.
+        
+        Time.append(Time[-1]+dt)
+        
+        #reitterating everything until tE
+        
+        ## updating the proces bar
+    
+        pbar.update(1)
+        
+        #unless the z coordinate has become 0.
+        if(w[2,-1]<0):
+            
+            break
+      
 ## --------------- The plots ---------------   
         
 plots.trajectory_3D_plot(w,Time)

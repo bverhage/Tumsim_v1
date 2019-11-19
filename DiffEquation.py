@@ -35,24 +35,7 @@ def f(t,w):
         Returns:The next numerical approximation of the solution.
                 wn+1=[u1(n+1),u2(n+1),...,un(n+1)]^T'''
     
-    ## this is the linear part of the differential equation
-    ## Little is linair so this matrix A is moslty filled with 0
-    ## the dimentions of A are 13x13
-    
-    A1=np.block([
-                [np.zeros((3,3)),np.identity(3)],
-                [np.zeros((3,3)),np.zeros((3,3))]
-                ])
-    
-    A2=np.block([
-                [np.zeros((4,4)),np.zeros((4,3))],
-                [np.zeros((3,4)),np.zeros((3,3))]
-                ])
-    
-    A=np.block([
-                [A1,np.zeros((6,7))],
-                [np.zeros((7,6)),A2]
-                ])
+
     
     # this is purly for comsetical reasons.
     #extracting a place matrix
@@ -68,33 +51,10 @@ def f(t,w):
     q_dot=w[10:13]
     
 
-
-    ### quaturnion shit
-    
-    ## quaturnion multiplication matrix
-    ## https://arxiv.org/pdf/0811.2889.pdf
-    
-    G_quat=1/2*np.array([
-                         [-q[1,-1],q[0,-1],q[3,-1],-q[2,-1]],
-                         [-q[2,-1],-q[3,-1],q[0,-1],q[1,-1]],
-                         [-q[3,-1],q[2,-1],-q[1,-1],q[0,-1]]
-                         ])
-    
-    quaturn_time_depententy=np.block([
-                                     [np.zeros((6,1))],
-                                     [1/2*np.transpose(G_quat).dot(q_dot)],
-                                     [np.zeros((3,1))]
-                                     ])
-    
-
-    
     ##The total differential equation.
     
-    #Linear part
-    ans=A.dot(w)
-    
-    #the quaturnions 
-    ans=ans+quaturn_time_depententy
+    #Internal physics
+    ans=Internal_physics(w)
     
     #the Internal rotational torques
     ans=ans+Rot_Internal(q_dot)
@@ -113,6 +73,65 @@ def f(t,w):
 
     return(ans)    
 
+def Internal_physics(w):
+    
+    #exctrating a quaturnion matrix
+    q=w[6:10]
+
+    #exctracting a angular velocity matrix
+    q_dot=w[10:13]
+    
+    ## All the internal physics like d/dt x = v 
+    
+    ## this is the internal linair part of the differential equation
+    ## Little is linair so this matrix A is moslty filled with 0
+    ## the dimentions of A are 13x13
+    
+    A1=np.block([
+                [np.zeros((3,3)),np.identity(3)],
+                [np.zeros((3,3)),np.zeros((3,3))]
+                ])
+    
+    A2=np.block([
+                [np.zeros((4,4)),np.zeros((4,3))],
+                [np.zeros((3,4)),np.zeros((3,3))]
+                ])
+    
+    A=np.block([
+                [A1,np.zeros((6,7))],
+                [np.zeros((7,6)),A2]
+                ])
+    
+    
+    
+    ## internal Rotation 
+    ## the internal rotation is not linear and is defined as following.
+    
+    ### quaturnion shit
+    
+    ## quaturnion multiplication matrix
+    ## https://arxiv.org/pdf/0811.2889.pdf
+    
+    # as G_quat wil be used multible times this must be a global variable 
+    global G_quat
+    G_quat=1/2*np.array([
+                         [-q[1,-1],q[0,-1],q[3,-1],-q[2,-1]],
+                         [-q[2,-1],-q[3,-1],q[0,-1],q[1,-1]],
+                         [-q[3,-1],q[2,-1],-q[1,-1],q[0,-1]]
+                         ])
+    
+    quaturn_time_depententy=np.block([
+                                     [np.zeros((6,1))],
+                                     [1/2*np.transpose(G_quat).dot(q_dot)],
+                                     [np.zeros((3,1))]
+                                     ])
+    
+    #adding both internal parts to the awnser
+    ans=A.dot(w)
+    
+    ans=ans+quaturn_time_depententy
+    
+    return(ans)
 
 
 
@@ -158,10 +177,10 @@ def Lat_Fg():
     
 def Lat_Fwl(v):
     #air resitance
-    Cw=float(0.75)
+    Cd=float(0.75)
     Area=float(0.04)
     Rho=float(1.225)
-    ans=-Cw*Area*Rho*v[:,-1:]*np.linalg.norm(v[:,-1:])
+    ans=-Cd*Area*Rho*v[:,-1:]*np.linalg.norm(v[:,-1:])
     ans = np.block([
                 [np.zeros((3,1))],
                 [ans],
