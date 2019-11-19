@@ -107,7 +107,7 @@ with tqdm(total=int(np.ceil(tE/dt))) as pbar:
         
         #unless the z coordinate has become 0.
         if(w[2,-1]<0):
-            
+            pbar.write("!!The ground has been reached!!")
             break
       
 ## --------------- The plots ---------------   
